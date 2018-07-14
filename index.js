@@ -80,7 +80,7 @@ var handlers = {};
 // Sample handler
 handlers.sample = function(data, callback) {
     // Callback a http status code, and a payload object
-    callback(406, {'name': 'sample handler'});
+    callback(200, {'name': 'sample handler'});
 };
 
 // Not found handler
