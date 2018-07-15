@@ -7,6 +7,7 @@
 var http = require('http');
 var url = require('url');
 var stringDecoder = require('string_decoder').StringDecoder;
+var Config = require('./config');
 
 // The server should respond to all requests with a string
 var server = http.createServer(function(req, res){
@@ -60,18 +61,19 @@ var server = http.createServer(function(req, res){
             var payloadString = JSON.stringify(payload);
 
             // Return the response
+            res.setHeader('Content-type', 'application/json');
             res.writeHead(statusCode);
             res.end(payloadString);
 
             // Log the request path
             console.log('Returning this response ', statusCode, payloadString);
-         });
+        });
     });
 });
 
 // Start the server, and have it listen on port 3000
-server.listen(3000, function(){
-    console.log(`Server is listening on port 3000 now`);
+server.listen(Config.port, function(){
+    console.log(`Server is listening on port ${ Config.port } in ${ Config.evnName } mode`);
 });
 
 // Define the handlers
