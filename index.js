@@ -4,21 +4,17 @@
 */
 
 // Dependencies
-const fs = require('fs');
-const url = require('url');
-const http = require('http');
-const https = require('https');
-const Config = require('./config');
-const _data = require('./lib/data');
-const stringDecoder = require('string_decoder').StringDecoder;
-
-// Testing
-// @TODO delete this
-_data.delete('test', 'test', console.log);
-
+const Fs = require('fs');
+const Url = require('url');
+const Http = require('http');
+const Https = require('https');
+const Config = require('./lib/config');
+const Helpers = require('./lib/helpers');
+const Handlers = require('./lib/handlers');
+const StringDecoder = require('string_decoder').StringDecoder;
 
 // Instatiating the http server
-const httpServer = http.createServer(function(req, res){
+const httpServer = Http.createServer(function(req, res){
     unifiedServer(req, res);
 });
 
@@ -29,12 +25,12 @@ httpServer.listen(Config.httpPort, function(){
 
 // Instatiating the https server
 const httpsServerOptions = {
-    'key' : fs.readFileSync('./https/key.pem'),
-    'cert' : fs.readFileSync('./https/cert.pem')
+    'key' : Fs.readFileSync('./https/key.pem'),
+    'cert' : Fs.readFileSync('./https/cert.pem')
 }
 
 // Start the https server, and have it listen on httpsPort from config.
-const httpsServer = https.createServer(httpsServerOptions, function(req, res){
+const httpsServer = Https.createServer(httpsServerOptions, function(req, res){
     unifiedServer(req, res);
 });
 httpsServer.listen(Config.httpsPort, function(){
@@ -45,7 +41,7 @@ httpsServer.listen(Config.httpsPort, function(){
 const unifiedServer = function(req, res) {
     
     // Get the URL and parse it
-    const parsedUrl = url.parse(req.url, true);
+    const parsedUrl = Url.parse(req.url, true);
     
     // Get the path
     const path = parsedUrl.pathname;
@@ -61,8 +57,8 @@ const unifiedServer = function(req, res) {
     const headers = req.headers;
 
     // Get the payload, if any
-    const decoder = new stringDecoder('utf-8');
-    const buffer = '';
+    const decoder = new StringDecoder('utf-8');
+    let buffer = '';
     req.on('data', function(data){
         buffer += decoder.write(data);
     });
@@ -78,7 +74,7 @@ const unifiedServer = function(req, res) {
             'queryStringObject' : queryStringObject,
             'method' : method,
             'headers' : headers,
-            'payload' : buffer
+            'payload' : Helpers.parseJSONToObject(buffer)
          };
 
          // Route the request to the handler specified in the router
@@ -103,21 +99,8 @@ const unifiedServer = function(req, res) {
     });
 }
 
-// Define the handlers
-const handlers = {};
-
-// Ping handler
-handlers.ping = function(data, callback) {
-    // Callback a http status code, and a payload object
-    callback(200, {'name': 'ping handler'});
-};
-
-// Not found handler
-handlers.notFound = function(data, callback) {
-    callback(404);
-};
-
 // Define a request router
 const router = {
-    'ping' : handlers.ping
+    'ping' : Handlers.ping,
+    'users': Handlers.users
 }
